@@ -68,10 +68,6 @@ public class WordAdapter extends RecyclerView.Adapter<WordAdapter.VH> {
 
         this.list.addAll(newlist);
         diffResult.dispatchUpdatesTo(this);
-
-
-
-
     }
 
     class VH extends RecyclerView.ViewHolder {
