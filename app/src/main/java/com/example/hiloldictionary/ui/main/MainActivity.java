@@ -4,8 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -30,6 +32,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -39,12 +42,16 @@ public class MainActivity extends AppCompatActivity
     private CompositeDisposable cd;
     private WordAdapter adapter;
     private int offset = 0;
+    private SearchView sv;
+    private DefinitionDao definitionDao;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
+        search1();
     }
 
     private void initView() {
@@ -152,5 +159,37 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onAction() {
         loadData();
+    }
+
+    public void search1() {
+        sv = findViewById(R.id.sv);
+
+        sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                callSearch(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                callSearch(newText);
+                Timber.d("sa" + newText);
+                return true;
+            }
+
+        });
+
+
+    }
+
+
+    public void callSearch(String query) {
+        definitionDao=DefinitionService.loadDAO(this);
+        Disposable a = definitionDao.search(query)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::updateAdapter);
+        cd.add(a);
     }
 }
