@@ -2,17 +2,8 @@ package com.example.hiloldictionary.ui.main;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
-
-
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
-import androidx.appcompat.widget.Toolbar;
-import androidx.core.view.GravityCompat;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hiloldictionary.R;
 import com.example.hiloldictionary.repository.storage.db.Definition;
@@ -28,6 +19,14 @@ import com.google.android.material.navigation.NavigationView;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -79,6 +78,8 @@ public class MainActivity extends AppCompatActivity
         loadData();
     }
 
+
+
     private void loadData() {
         DefinitionDao dao = DefinitionService.loadDAO(this);
         Disposable d = dao.loadDefinitionsByPage(offset)
@@ -90,18 +91,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void updateAdapter(List<Definition> it) {
-        adapter.updateData(it);
+          adapter.updateData(it);
+    }
+    private void updateAdapter1(List<Definition> it) {
+        adapter.onSearchUpdate(it);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -174,7 +173,7 @@ public class MainActivity extends AppCompatActivity
             @Override
             public boolean onQueryTextChange(String newText) {
                 callSearch(newText);
-                Timber.d("sa" + newText);
+                Timber.d("" + newText);
                 return true;
             }
 
@@ -189,7 +188,7 @@ public class MainActivity extends AppCompatActivity
         Disposable a = definitionDao.search(query)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::updateAdapter);
+                .subscribe(this::updateAdapter1);
         cd.add(a);
     }
 }
