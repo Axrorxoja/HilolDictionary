@@ -3,8 +3,8 @@ package com.example.hiloldictionary.ui.main;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
-
 import com.example.hiloldictionary.R;
 import com.example.hiloldictionary.repository.storage.db.Definition;
 import com.example.hiloldictionary.repository.storage.db.DefinitionDao;
@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity
     private int offset = 0;
     private SearchView sv;
     private DefinitionDao definitionDao;
+    private Menu menu;
 
 
     @Override
@@ -50,7 +51,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
-        search1();
+
     }
 
     private void initView() {
@@ -103,6 +104,30 @@ public class MainActivity extends AppCompatActivity
 
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        SearchView sv = (SearchView) menu.findItem(R.id.action_search).getActionView();
+
+        sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                callSearch(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                callSearch(newText);
+                Timber.d("" + newText);
+                return true;
+            }
+
+        });
+
+        return  true;
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -160,27 +185,27 @@ public class MainActivity extends AppCompatActivity
         loadData();
     }
 
-    public void search1() {
-        sv = findViewById(R.id.sv);
-
-        sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                callSearch(query);
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                callSearch(newText);
-                Timber.d("" + newText);
-                return true;
-            }
-
-        });
-
-
-    }
+//    public void search1() {
+//        SearchView sv = (SearchView) menu.findItem(R.id.action_search).getActionView();
+//
+//        sv.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//            @Override
+//            public boolean onQueryTextSubmit(String query) {
+//                callSearch(query);
+//                return true;
+//            }
+//
+//            @Override
+//            public boolean onQueryTextChange(String newText) {
+//                callSearch(newText);
+//                Timber.d("" + newText);
+//                return true;
+//            }
+//
+//        });
+//
+//
+//    }
 
 
     public void callSearch(String query) {
