@@ -54,6 +54,14 @@ public class WordAdapter extends RecyclerView.Adapter<WordAdapter.VH> {
         notifyItemRangeInserted(oldSize, it.size());
     }
 
+    public void onSearchUpdate(List<Definition> it) {
+        int oldSize = list.size();
+        list.clear();
+        list.addAll(it);
+        notifyItemRangeRemoved(0,oldSize);
+        notifyItemRangeInserted(0,list.size());
+    }
+
     class VH extends RecyclerView.ViewHolder {
         private AppCompatTextView tvName;
         private Definition definition;
@@ -62,6 +70,7 @@ public class WordAdapter extends RecyclerView.Adapter<WordAdapter.VH> {
             super(itemView);
             tvName = itemView.findViewById(R.id.tv_name);
             itemView.setOnClickListener(v -> listener.onItemClick(definition));
+
         }
 
         void onBind(Definition definition) {
