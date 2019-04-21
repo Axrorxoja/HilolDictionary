@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hiloldictionary.R;
@@ -53,23 +54,25 @@ public class WordAdapter extends RecyclerView.Adapter<WordAdapter.VH> {
     }
 
     public void updateData(List<Definition> it) {
-        int oldSize = defaultList.size();
+        DiffCallback callback = new DiffCallback(defaultList, it);
+        DiffUtil.DiffResult result = DiffUtil.calculateDiff(callback);
         defaultList.addAll(it);
         originList.addAll(it);
-        notifyItemRangeInserted(oldSize, it.size());
+        result.dispatchUpdatesTo(this);
     }
 
-    public void onSearch(List<Definition> definitions) {
+    public void onSearch(List<Definition> it) {
         StringBuilder builder = new StringBuilder();
-        for (Definition definition : definitions) {
+        for (Definition definition : it) {
             builder.append(definition.getWord()).append(" ");
         }
         Timber.d("onSearch:%s", builder.toString());
-        int oldSize = defaultList.size();
+        DiffCallback callback = new DiffCallback(defaultList, it);
+        DiffUtil.DiffResult result = DiffUtil.calculateDiff(callback);
         defaultList.clear();
-        defaultList.addAll(definitions);
-        notifyItemRangeRemoved(0, oldSize);
-        notifyItemRangeInserted(0, definitions.size());
+        defaultList.addAll(it);
+        //todo learn notify by payload
+        result.dispatchUpdatesTo(this);
     }
 
     public void searchClosed() {
