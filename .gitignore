@@ -1,5 +1,5 @@
 build
 app/build
-app.iml
+app/app.iml
 .idea/
 .gradle
