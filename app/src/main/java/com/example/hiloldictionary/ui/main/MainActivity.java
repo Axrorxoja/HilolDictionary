@@ -2,10 +2,12 @@ package com.example.hiloldictionary.ui.main;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -30,17 +32,23 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import timber.log.Timber;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         ItemClickListener,
         IAction {
+    DefinitionDao dao;
     private RecyclerView rv;
     private CompositeDisposable cd;
     private WordAdapter adapter;
     private int offset = 0;
+    private boolean isPaginationEnabled = true;
+    private LinearLayoutManager lm;
+    private int lastPos;
 
     @Override
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -48,6 +56,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initView() {
+        dao = DefinitionService.loadDAO(this);
         cd = new CompositeDisposable();
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -61,19 +70,22 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        setUpRv();
+        loadData();
+    }
+
+    private void setUpRv() {
         rv = findViewById(R.id.rv);
-        LinearLayoutManager lm = new LinearLayoutManager(this);
+        lm = new LinearLayoutManager(this);
         rv.setLayoutManager(lm);
         rv.setHasFixedSize(false);
         adapter = new WordAdapter(this, new ArrayList<>(), this);
         rv.setAdapter(adapter);
         EndlessRecyclerOnScrollListener listener = new EndlessRecyclerOnScrollListener(lm, this);
         rv.addOnScrollListener(listener);
-        loadData();
     }
 
     private void loadData() {
-        DefinitionDao dao = DefinitionService.loadDAO(this);
         Disposable d = dao.loadDefinitionsByPage(offset)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -87,12 +99,61 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        MenuItem item = menu.getItem(0);
+        SearchView searchView = (SearchView) item.getActionView();
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                onSearch(newText);
+                return true;
+            }
+        });
+
+        item.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                isPaginationEnabled = false;
+                Timber.d("onMenuItemActionExpand");
+                lastPos = lm.findFirstCompletelyVisibleItemPosition();
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                Timber.d("onMenuItemActionCollapse");
+                adapter.searchClosed();
+                lm.scrollToPosition(lastPos);
+                isPaginationEnabled = true;//todo scroll position not restored correctly
+                return true;
+            }
+        });
+        return true;
+    }
+
+    private void onSearch(String newText) {
+        Timber.d("onSearch %s", newText);
+        if (newText.isEmpty()) return;
+        Disposable disposable = dao.search(newText)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnSuccess(adapter::onSearch)
+                .subscribe();
+        cd.add(disposable);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_search) {
             return true;
         }
 
@@ -151,6 +212,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onAction() {
-        loadData();
+        if (isPaginationEnabled)
+            loadData();
     }
 }

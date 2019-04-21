@@ -15,16 +15,20 @@ import com.example.hiloldictionary.repository.storage.db.Definition;
 import java.util.ArrayList;
 import java.util.List;
 
+import timber.log.Timber;
+
 public class WordAdapter extends RecyclerView.Adapter<WordAdapter.VH> {
     private LayoutInflater inflater;
-    private ArrayList<Definition> list;
+    private ArrayList<Definition> defaultList;
+    private ArrayList<Definition> originList;
     private ItemClickListener listener;
 
     public WordAdapter(Context ctx,
                        ArrayList<Definition> list,
                        ItemClickListener listener) {
         inflater = LayoutInflater.from(ctx);
-        this.list = list;
+        this.defaultList = list;
+        originList = (ArrayList<Definition>) defaultList.clone();
         this.listener = listener;
     }
 
@@ -39,19 +43,37 @@ public class WordAdapter extends RecyclerView.Adapter<WordAdapter.VH> {
     @Override
     public void onBindViewHolder(@NonNull VH holder,
                                  int position) {
-        Definition definition = list.get(position);
+        Definition definition = defaultList.get(position);
         holder.onBind(definition);
     }
 
     @Override
     public int getItemCount() {
-        return list.size();
+        return defaultList.size();
     }
 
     public void updateData(List<Definition> it) {
-        int oldSize = list.size();
-        list.addAll(it);
+        int oldSize = defaultList.size();
+        defaultList.addAll(it);
+        originList.addAll(it);
         notifyItemRangeInserted(oldSize, it.size());
+    }
+
+    public void onSearch(List<Definition> definitions) {
+        StringBuilder builder = new StringBuilder();
+        for (Definition definition : definitions) {
+            builder.append(definition.getWord()).append(" ");
+        }
+        Timber.d("onSearch:%s", builder.toString());
+        int oldSize = defaultList.size();
+        defaultList.clear();
+        defaultList.addAll(definitions);
+        notifyItemRangeRemoved(0, oldSize);
+        notifyItemRangeInserted(0, definitions.size());
+    }
+
+    public void searchClosed() {
+        onSearch(originList);
     }
 
     class VH extends RecyclerView.ViewHolder {
