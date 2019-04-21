@@ -40,11 +40,24 @@ public class MainActivity extends AppCompatActivity
     private WordAdapter adapter;
     private int offset = 0;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
+
+    }
+
+    private void func(String text) {
+
+        DefinitionDao dao=DefinitionService.loadDAO(this);
+        Disposable disposable=dao.search(text)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::updateAdapter);
+        cd.add(disposable);
+
     }
 
     private void initView() {

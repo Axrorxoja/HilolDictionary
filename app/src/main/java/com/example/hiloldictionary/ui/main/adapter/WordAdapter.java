@@ -7,10 +7,12 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.hiloldictionary.R;
 import com.example.hiloldictionary.repository.storage.db.Definition;
+import com.example.hiloldictionary.ui.main.diff_util.DiffUtillCallBack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,9 +51,23 @@ public class WordAdapter extends RecyclerView.Adapter<WordAdapter.VH> {
     }
 
     public void updateData(List<Definition> it) {
-        int oldSize = list.size();
+
+        List<Definition>newlist=new ArrayList<>();
+        newlist.addAll(list);
+        newlist.addAll(it);
+
+  /*      int oldSize = list.size();
         list.addAll(it);
         notifyItemRangeInserted(oldSize, it.size());
+*/
+        final DiffUtillCallBack diffCallback = new DiffUtillCallBack(this.list, newlist);
+        final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffCallback);
+
+
+        this.list.clear();
+
+        this.list.addAll(newlist);
+        diffResult.dispatchUpdatesTo(this);
     }
 
     class VH extends RecyclerView.ViewHolder {
