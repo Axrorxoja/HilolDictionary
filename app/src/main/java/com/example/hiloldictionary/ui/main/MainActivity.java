@@ -3,6 +3,7 @@ package com.example.hiloldictionary.ui.main;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.SearchView;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -40,11 +41,38 @@ public class MainActivity extends AppCompatActivity
     private WordAdapter adapter;
     private int offset = 0;
 
+    private SearchView searchView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                func(s);
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                func(s);
+                return false;
+            }
+        });
+    }
+
+    private void func(String text) {
+
+        DefinitionDao dao=DefinitionService.loadDAO(this);
+        Disposable disposable=dao.search(text)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::updateAdapter);
+        cd.add(disposable);
+
     }
 
     private void initView() {
@@ -70,6 +98,8 @@ public class MainActivity extends AppCompatActivity
         EndlessRecyclerOnScrollListener listener = new EndlessRecyclerOnScrollListener(lm, this);
         rv.addOnScrollListener(listener);
         loadData();
+
+        searchView=findViewById(R.id.searchView);
     }
 
     private void loadData() {
