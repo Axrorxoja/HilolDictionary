@@ -1,16 +1,24 @@
 package com.example.hiloldictionary;
 
-import android.app.Application;
+import com.example.hiloldictionary.di.component.DaggerAppComponent;
 
+import dagger.android.AndroidInjector;
+import dagger.android.DaggerApplication;
 import timber.log.Timber;
 
-public class App extends Application {
+public class App extends DaggerApplication {
 
     @Override
     public void onCreate() {
         super.onCreate();
         initTimber();
         //todo https://git-scm.com/book/ru/v1/Основы-Git-Создание-Git-репозитория
+    }
+
+    @Override
+    protected AndroidInjector<? extends DaggerApplication> applicationInjector() {
+        return DaggerAppComponent.builder().create(this);
+
     }
 
     private void initTimber() {

@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.hiloldictionary.R;
 import com.example.hiloldictionary.repository.storage.db.Definition;
 import com.example.hiloldictionary.repository.storage.db.DefinitionDao;
-import com.example.hiloldictionary.repository.storage.db.DefinitionService;
+import com.example.hiloldictionary.repository.storage.pref.IPreference;
 import com.example.hiloldictionary.ui.item.ItemActivity;
 import com.example.hiloldictionary.ui.main.adapter.EndlessRecyclerOnScrollListener;
 import com.example.hiloldictionary.ui.main.adapter.IAction;
@@ -25,9 +25,11 @@ import com.example.hiloldictionary.ui.main.adapter.ItemClickListener;
 import com.example.hiloldictionary.ui.main.adapter.WordAdapter;
 import com.google.android.material.navigation.NavigationView;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
+import dagger.android.AndroidInjection;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
@@ -38,10 +40,17 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         ItemClickListener,
         IAction {
+    @Inject
     DefinitionDao dao;
+
+    @Inject
+    WordAdapter adapter;
+
+    @Inject
+    IPreference preference;
+
     private RecyclerView rv;
     private CompositeDisposable cd;
-    private WordAdapter adapter;
     private int offset = 0;
     private boolean isPaginationEnabled = true;
     private LinearLayoutManager lm;
@@ -50,13 +59,13 @@ public class MainActivity extends AppCompatActivity
     @Override
 
     protected void onCreate(Bundle savedInstanceState) {
+        AndroidInjection.inject(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
     }
 
     private void initView() {
-        dao = DefinitionService.loadDAO(this);
         cd = new CompositeDisposable();
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -79,7 +88,7 @@ public class MainActivity extends AppCompatActivity
         lm = new LinearLayoutManager(this);
         rv.setLayoutManager(lm);
         rv.setHasFixedSize(false);
-        adapter = new WordAdapter(this, new ArrayList<>(), this);
+//        adapter = new WordAdapter(this, new ArrayList<>(), this);
         rv.setAdapter(adapter);
         EndlessRecyclerOnScrollListener listener = new EndlessRecyclerOnScrollListener(lm, this);
         rv.addOnScrollListener(listener);
