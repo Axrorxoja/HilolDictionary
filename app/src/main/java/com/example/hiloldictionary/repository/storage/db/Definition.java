@@ -6,6 +6,8 @@ import android.os.Parcelable;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
+import java.util.Objects;
+
 //todo serialize vs parceAble
 @Entity
 public class Definition implements Parcelable {
@@ -82,4 +84,19 @@ public class Definition implements Parcelable {
             return new Definition[size];
         }
     };
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Definition that = (Definition) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(word, that.word) &&
+                Objects.equals(definition, that.definition);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, word, definition);
+    }
 }
