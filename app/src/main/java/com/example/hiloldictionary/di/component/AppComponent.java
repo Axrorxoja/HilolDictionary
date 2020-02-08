@@ -18,8 +18,7 @@ import dagger.android.support.AndroidSupportInjectionModule;
 })
 @AppScope
 interface AppComponent extends AndroidInjector<App> {
-    @Component.Builder
-    interface Builder extends AndroidInjector.Factory<App> {
-
+    @Component.Factory
+    interface Factory extends AndroidInjector.Factory<App> {
     }
 }

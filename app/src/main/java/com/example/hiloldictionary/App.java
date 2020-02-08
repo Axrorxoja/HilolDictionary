@@ -1,5 +1,6 @@
 package com.example.hiloldictionary;
 
+
 import com.example.hiloldictionary.di.component.DaggerAppComponent;
 
 import dagger.android.AndroidInjector;
@@ -17,7 +18,7 @@ public class App extends DaggerApplication {
 
     @Override
     protected AndroidInjector<? extends DaggerApplication> applicationInjector() {
-        return DaggerAppComponent.builder().create(this);
+        return DaggerAppComponent.factory().create(this);
 
     }
 
